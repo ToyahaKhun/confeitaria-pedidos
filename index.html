@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos de Confeitaria</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Incluindo o CSS -->
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Bem-vindo à nossa Confeitaria!</h1>
+            <p>Faça seu pedido e entraremos em contato!</p>
+        </div>
+    </header>
+
+    <section class="pedidos">
+        <div class="container">
+            <h2>Faça seu Pedido</h2>
+            <form id="pedido-form">
+                <label for="nome">Nome Completo:</label>
+                <input type="text" id="nome" name="nome" required><br><br>
+
+                <label for="produto">Escolha o Produto:</label>
+                <select id="produto" name="produto" required>
+                    <optgroup label="Bolos por KG">
+                        <option value="Bolo de Chocolate (1KG)">Bolo de Chocolate</option>
+                        <option value="Bolo de Frutas (1KG)">Bolo de Frutas</option>
+                    </optgroup>
+                    <optgroup label="Doces por Unidade">
+                        <option value="Doce de Leite">Doce de Leite</option>
+                        <option value="Doces Sortidos">Doces Sortidos</option>
+                    </optgroup>
+                </select><br><br>
+
+                <label for="quantidade">Quantidade:</label>
+                <input type="number" id="quantidade" name="quantidade" min="1" required><br><br>
+
+                <label for="entrega">Forma de Entrega:</label>
+                <select id="entrega" name="entrega" required>
+                    <option value="Retirada no Local">Retirada no Local</option>
+                    <option value="Entrega">Entrega (Custo adicional)</option>
+                </select><br><br>
+
+                <!-- Endereço do Estabelecimento -->
+                <div id="endereco-estabelecimento" style="display: none;">
+                    <p><strong>Endereço do Estabelecimento:</strong></p>
+                    <p>Rua Confeitaria Feliz, 123 - Centro, Cidade Doce</p>
+                </div>
+
+                <!-- Endereço de Entrega -->
+                <div id="endereco-entrega" style="display: none;">
+                    <label for="endereco">Endereço de Entrega:</label>
+                    <textarea id="endereco" name="endereco" placeholder="Rua, número, bairro..."></textarea><br><br>
+                </div>
+
+                <label for="pagamento">Forma de Pagamento:</label>
+                <div class="pagamento-opcoes">
+                    <input type="radio" id="pix" name="pagamento" value="Pix" required>
+                    <label for="pix">Pix</label><br>
+
+                    <input type="radio" id="cartao" name="pagamento" value="Cartão">
+                    <label for="cartao">Cartão</label><br>
+
+                    <input type="radio" id="dinheiro" name="pagamento" value="Dinheiro">
+                    <label for="dinheiro">Dinheiro</label>
+                </div><br>
+
+                <!-- Seção de Troco -->
+                <div id="troco-section" style="display: none;">
+                    <label for="troco">Precisa de troco para quanto?</label>
+                    <input type="text" id="troco" name="troco" placeholder="Ex.: 50.00">
+                </div><br>
+
+                <button type="submit">Enviar Pedido</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Confeitaria. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mostra ou oculta a seção de endereço dependendo da forma de entrega
+        const entregaSelect = document.getElementById("entrega");
+        const enderecoEntrega = document.getElementById("endereco-entrega");
+        const enderecoEstabelecimento = document.getElementById("endereco-estabelecimento");
+        const pagamentoRadio = document.getElementsByName("pagamento");
+        const trocoSection = document.getElementById("troco-section");
+
+        entregaSelect.addEventListener("change", function () {
+            if (entregaSelect.value === "Entrega") {
+                enderecoEntrega.style.display = "block";
+                enderecoEstabelecimento.style.display = "none";
+            } else if (entregaSelect.value === "Retirada no Local") {
+                enderecoEstabelecimento.style.display = "block";
+                enderecoEntrega.style.display = "none";
+            }
+        });
+
+        // Mostra ou oculta a seção de troco dependendo do método de pagamento
+        document.getElementById("pedido-form").addEventListener("change", function () {
+            const dinheiroOption = document.getElementById("dinheiro");
+            if (dinheiroOption.checked) {
+                trocoSection.style.display = "block";
+            } else {
+                trocoSection.style.display = "none";
+            }
+        });
+
+        // Envio do pedido para o WhatsApp
+        document.getElementById("pedido-form").addEventListener("submit", function(event) {
+            event.preventDefault();  // Impede o envio padrão do formulário
+
+            // Coletando os dados do formulário
+            var nome = document.getElementById("nome").value;
+            var produto = document.getElementById("produto").value;
+            var quantidade = document.getElementById("quantidade").value;
+            var entrega = document.getElementById("entrega").value;
+            var endereco = document.getElementById("endereco").value;
+            var pagamento = document.querySelector('input[name="pagamento"]:checked').value;
+            var troco = document.getElementById("troco").value;
+
+            // Criando a mensagem que será enviada via WhatsApp
+            var mensagem = `*Novo Pedido de Confeitaria*\n\n`;
+            mensagem += `*Nome:* ${nome}\n`;
+            mensagem += `*Produto:* ${produto}\n`;
+            mensagem += `*Quantidade:* ${quantidade}\n`;
+            mensagem += `*Forma de Entrega:* ${entrega}\n`;
+
+            if (entrega === "Entrega") {
+                mensagem += `*Endereço de Entrega:* ${endereco}\n`;
+            } else {
+                mensagem += `*Retirada no Local*\n`;
+            }
+
+            mensagem += `*Forma de Pagamento:* ${pagamento}\n`;
+
+            if (pagamento === "Dinheiro" && troco) {
+                mensagem += `*Troco necessário:* R$ ${troco}\n`;
+            }
+
+            // Substituindo os espaços e caracteres especiais para a URL
+            var mensagemUrl = encodeURIComponent(mensagem);
+
+            // Número de WhatsApp para onde será enviado o pedido (incluindo o código do país)
+            var numeroWhatsapp = "554299371431";  // Substitua com o seu número de WhatsApp
+
+            // Gerando o link de WhatsApp
+            var linkWhatsapp = `https://wa.me/${numeroWhatsapp}?text=${mensagemUrl}`;
+
+            // Redirecionando para o WhatsApp
+            window.location.href = linkWhatsapp;
+        });
+    </script>
+</body>
+</html>
